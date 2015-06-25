@@ -6,6 +6,9 @@
 
 var React = require('react-native');
 var SearchResults = require('./SearchResults');
+var SearchBookingResults = require('./SearchBookingResults');
+var UserDetail = require('./UserDetail');
+var Buffer = require('./node_modules/buffer/').Buffer
 var {
     StyleSheet,
     View,
@@ -13,7 +16,8 @@ var {
     Component,
     TextInput,
     TouchableHighlight,
-    ActivityIndicatorIOS
+    ActivityIndicatorIOS,
+    AlertIOS
     } = React;
 
 var styles = StyleSheet.create({
@@ -103,6 +107,7 @@ class SearchBooks extends Component {
 
     bookTitleInput(event) {
         this.setState({ bookTitle: event.nativeEvent.text });
+        AlertIOS.alert('you have typed', this.state.bookTitle);
     }
 
     bookAuthorInput(event) {
@@ -117,19 +122,44 @@ class SearchBooks extends Component {
 
         this.setState({ isLoading: true });
 
+        /*
         var baseURL = 'https://www.googleapis.com/books/v1/volumes?q=';
+        
         if (this.state.bookAuthor !== '') {
             baseURL += encodeURIComponent('inauthor:' + this.state.bookAuthor);
         }
         if (this.state.bookTitle !== '') {
             baseURL += (this.state.bookAuthor === '') ? encodeURIComponent('intitle:' + this.state.bookTitle) : encodeURIComponent('+intitle:' + this.state.bookTitle);
         }
+        */
+        
+
+        
+        
+
+        var baseURL = 'https://demo.syngency.com/admin/api'
+
+        //var baseURL = 'http://tia@demoagency.co:Tia1234!@demo.syngency.com/admin/api/bookings?query='+this.state.bookTitle;
+
+
+        
 
         console.log('URL: >>> ' + baseURL);
-        fetch(baseURL)
+
+        var inputvalues = new Buffer("tia@demoagency.co"+":"+"Tia1234!").toString('base64')
+
+        fetch(baseURL, {
+              method: 'get',
+              headers: {
+                'Authorization': 'Basic '+inputvalues,
+                'Content-Type': 'application/json'
+              }
+            })
             .then((response) => response.json())
             .then((responseData) => {
                 this.setState({ isLoading: false});
+                
+                /*
                 if (responseData.items) {
 
                     this.props.navigator.push({
@@ -137,9 +167,33 @@ class SearchBooks extends Component {
                         component: SearchResults,
                         passProps: {books: responseData.items}
                     });
+
+
+
                 } else {
                     this.setState({ errorMessage: 'No results found'});
                 }
+                */
+                console.log(responseData);
+                if (responseData.id) {
+
+                    
+                    this.props.navigator.push({
+                        title: responseData.first_name+" "+responseData.last_name,
+                        component: UserDetail,
+                        passProps: {responseData}
+                    });
+
+                    
+                    //this.setState({ errorMessage: 'login successed'+responseData.first_name+" "+responseData.last_name});
+
+
+
+                } else {
+                    this.setState({ errorMessage: 'login failed'+" can't find id"});
+                }
+                
+               
             })
             .catch(error =>
                 this.setState({
@@ -147,6 +201,24 @@ class SearchBooks extends Component {
                     errorMessage: error
                 }))
             .done();
+
+            /*
+            fetch('/users', {
+              method: 'post',
+              headers: {
+                'Authorization': 'Basic '+btoa("tia@demoagency.co"+":"+"Tia1234!"),
+                'Content-Type': 'application/json'
+              })
+            }).then(status)
+              .then(json)
+              .then(function(json) {
+                console.log('request succeeded with json response', json)
+              }).catch(function(error) {
+                console.log('request failed', error)
+              })
+              .done();
+              */
+            
     }
 
 }

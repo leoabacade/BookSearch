@@ -18,12 +18,16 @@ var styles = StyleSheet.create({
 class Featured extends Component {
     render() {
         return (
+            
             <NavigatorIOS
                 style={styles.container}
                 initialRoute={{
             title: 'Featured Books',
             component: BookList
         }}/>
+        
+
+        
             
         );
     }
